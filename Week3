@@ -1,0 +1,96 @@
+CREATE DATABASE BankB;
+USE BankB;
+
+CREATE TABLE Branch(
+branch_name VARCHAR(50) PRIMARY KEY,
+branch_city VARCHAR(50),
+assets DECIMAL(15,2)
+);
+
+CREATE TABLE BankAccount(
+accno INT PRIMARY KEY,
+branch_name VARCHAR(50),
+balance DECIMAL(15,2),
+FOREIGN KEY (branch_name) REFERENCES Branch(branch_name)
+);
+
+CREATE TABLE BankCustomer(
+customer_name VARCHAR(50) PRIMARY KEY,
+customer_street VARCHAR(100),
+customer_city VARCHAR(50)
+);
+
+CREATE TABLE Depositer (
+    customer_name VARCHAR(50),
+    accno INT,
+    PRIMARY KEY (customer_name, accno),
+    FOREIGN KEY (customer_name) REFERENCES BankCustomer(customer_name),
+    FOREIGN KEY (accno) REFERENCES BankAccount(accno)
+);
+CREATE TABLE Loan (
+    loan_number INT PRIMARY KEY,
+    branch_name VARCHAR(50),
+    amount DECIMAL(15,2),
+    FOREIGN KEY (branch_name) REFERENCES Branch(branch_name)
+);
+
+INSERT INTO Branch VALUES
+('SBI_Chamrajpet', 'Bangalore', 50000),
+('SBI_ResidencyRoad', 'Bangalore', 10000),
+('SBI_ShivajiRoad', 'Bangalore', 20000),
+('SBI_ParliamentRoad', 'Bangalore', 10000),
+('SBI_JantarMantar', 'Delhi', 20000);
+
+INSERT INTO BankAccount VALUES
+(1, 'SBI_Chamrajpet', 2000),
+(2, 'SBI_ResidencyRoad', 5000),
+(3, 'SBI_ShivajiRoad', 6000),
+(4, 'SBI_ParliamentRoad', 9000),
+(5, 'SBI_JantarMantar', 8000),
+(6, 'SBI_ShivajiRoad',4000),
+(7, 'SBI_ResidencyRoad',4000),
+(8, 'SBI_ParliamentRoad', 3000),
+(9, 'SBI_ResidencyRoad' , 5000),
+(10, 'JantarMantar',2000);
+
+INSERT INTO BankCustomer VALUES
+('Avinash', 'Bukk_TempleRoad', 'Bangalore'),
+('Dinesh', 'Bannergatta_Road', 'Bangalore'),
+('Mohan', 'NationalCollege_Road', 'Bangalore'),
+('Nikil','Akbar_Road','Delhi'),
+('Ravi','Pritviraj_Road','Delhi');
+
+
+INSERT INTO Depositer VALUES
+('Avinash', 1),
+('Dinesh', 2),
+('Nikil', 4),
+('Ravi', 5),
+('Avinash', 7),
+('Nikil',8),
+('Dinesh', 9),
+('Nikil',10);
+
+
+INSERT INTO Loan VALUES
+(1, 'SBI_Chamrajpet', 1000),
+(2, 'SBI_ResidencyRoad', 2000),
+(3, 'SBI_ShivajiRoad', 3000),
+(4, 'SBI_ParliamentRoad', 4000),
+(5, 'SBI_JantarMantar', 5000);
+
+SELECT branch_name, (assets/100000) AS "assets in lakhs"
+FROM Branch;
+
+SELECT d.customer_name, b.branch_name, COUNT(*) AS num_accounts
+FROM Depositer d
+JOIN BankAccount b ON d.accno = b.accno
+GROUP BY d.customer_name, b.branch_name
+HAVING COUNT(*) >= 2;
+
+CREATE VIEW BranchLoanSummary AS
+SELECT branch_name, SUM(amount) AS total_loans
+FROM Loan
+GROUP BY branch_name;
+
+SELECT * FROM BranchLoanSummary;
