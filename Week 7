@@ -1,0 +1,99 @@
+create database sup;
+use sup;
+CREATE TABLE Supplier (
+    sid INT PRIMARY KEY,
+    sname VARCHAR(100),
+    city VARCHAR(100)
+);
+
+CREATE TABLE Parts (
+    pid INT PRIMARY KEY,
+    pname VARCHAR(100),
+    color VARCHAR(100)
+);
+
+CREATE TABLE Catalog (
+    sid INT,
+    pid INT,
+    cost DECIMAL(10,2),
+    PRIMARY KEY (sid, pid),
+    FOREIGN KEY (sid) REFERENCES Supplier(sid),
+    FOREIGN KEY (pid) REFERENCES Parts(pid)
+);
+
+INSERT INTO Supplier VALUES (1, 'Acme Widget Suppliers', 'Delhi');
+INSERT INTO Supplier VALUES (2, 'BestParts Ltd', 'Mumbai');
+insert into supplier values (3, 'Vimal' , 'Mumbai');
+insert into supplier value (4, 'Reliance', ' Delhi');
+select * from supplier;
+
+INSERT INTO Parts VALUES (01, 'Bolt', 'red');
+INSERT INTO Parts VALUES (02, 'Nut', 'blue');
+insert into parts values (03,'Screw Anchor', 'White');
+INSERT INTO Parts VALUES (04, 'Screw', 'red');
+insert into parts values (05, 'Ball Bearings' , 'brown');
+select * from parts;
+
+INSERT INTO Catalog VALUES (1, 01, 50.00);
+INSERT INTO Catalog VALUES (1, 02, 60.00);
+INSERT INTO Catalog VALUES (2, 03, 40.00);
+INSERT INTO Catalog VALUES (2, 04, 80.00);
+select * from catalog;
+
+
+SELECT DISTINCT p.pname
+FROM Parts p
+JOIN Catalog c ON p.pid = c.pid;
+
+SELECT s.sname
+FROM Supplier s
+WHERE NOT EXISTS (
+    SELECT p.pid FROM Parts p
+    WHERE p.color = 'red' AND NOT EXISTS (
+        SELECT * FROM Catalog c
+        WHERE c.sid = s.sid AND c.pid = p.pid
+    )
+);
+
+
+SELECT s.sname
+FROM Supplier s
+WHERE NOT EXISTS (
+    SELECT p.pid FROM Parts p
+    WHERE p.color = 'red' AND NOT EXISTS (
+        SELECT * FROM Catalog c
+        WHERE c.sid = s.sid AND c.pid = p.pid
+    )
+);
+
+
+SELECT p.pname
+FROM Parts p
+JOIN Catalog c ON p.pid = c.pid
+JOIN Supplier s ON c.sid = s.sid
+WHERE s.sname = 'Acme Widget Suppliers'
+AND NOT EXISTS (
+    SELECT * FROM Catalog c2
+    WHERE c2.pid = p.pid
+    AND c2.sid <> s.sid
+);
+
+
+SELECT DISTINCT c.sid
+FROM Catalog c
+WHERE c.cost > (
+    SELECT AVG(c2.cost)
+    FROM Catalog c2
+    WHERE c2.pid = c.pid
+);
+
+
+SELECT p.pname, s.sname
+FROM Parts p
+JOIN Catalog c ON p.pid = c.pid
+JOIN Supplier s ON c.sid = s.sid
+WHERE (p.pid, c.cost) IN (
+    SELECT pid, MAX(cost)
+    FROM Catalog
+    GROUP BY pid
+);
