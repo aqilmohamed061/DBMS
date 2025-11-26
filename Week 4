@@ -1,5 +1,5 @@
-CREATE DATABASE college;
-USE college;
+CREATE DATABASE emp;
+USE emp;
 
 CREATE TABLE dept (
   deptno INT PRIMARY KEY,
