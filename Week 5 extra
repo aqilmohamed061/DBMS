@@ -1,0 +1,144 @@
+CREATE DATABASE emp;
+USE emp;
+
+CREATE TABLE dept (
+  deptno INT PRIMARY KEY,
+  dname VARCHAR(50),
+  dloc VARCHAR(50)
+);
+
+CREATE TABLE employee (
+  empno INT PRIMARY KEY,
+  ename VARCHAR(50),
+  mgrno INT,
+  hiredate DATE,
+  sal DECIMAL(10,2),
+  deptno INT,
+  job_role VARCHAR(30),
+  FOREIGN KEY (deptno) REFERENCES dept(deptno)
+);
+
+CREATE TABLE project (
+  projectno INT PRIMARY KEY,
+  ploc VARCHAR(50),
+  pname VARCHAR(50)
+);
+
+CREATE TABLE assigned_to (
+  empno INT,
+  projectno INT,
+  jobrole VARCHAR(30),
+  PRIMARY KEY (empno, projectno),
+  FOREIGN KEY (empno) REFERENCES employee(empno),
+  FOREIGN KEY (projectno) REFERENCES project(projectno)
+);
+
+CREATE TABLE incentives (
+  empno INT,
+  incentivedate DATE,
+  incentiveamount INT,
+  PRIMARY KEY (empno, incentivedate),
+  FOREIGN KEY (empno) REFERENCES employee(empno)
+);
+
+-- Insert data
+INSERT INTO dept VALUES
+(1, 'HR', 'Bengaluru'),
+(2, 'Finance', 'Hyderabad'),
+(3, 'IT', 'Mysuru'),
+(4, 'Sales', 'Bengaluru'),
+(5, 'Admin', 'Hyderabad');
+
+INSERT INTO employee VALUES
+(1, 'Lalit', 100, '2018-04-12', 50000, 1, 'Analyst'),
+(2, 'Ram', NULL, '2019-08-18', 70000, 2, 'Engineer'),
+(3, 'Sasi', 200, '2020-01-15', 12000, 2, 'Clerk'),
+(4, 'Manoj', 300, '2017-06-10', 40000, 3, 'Analyst'),
+(5, 'Raj', 200, '2017-10-25', 90000, 3, 'LeadAnalyst');
+
+INSERT INTO project VALUES
+(201, 'Bengaluru', 'Payroll'),
+(202, 'Hyderabad', 'Audit'),
+(203, 'Mysuru', 'ERP'),
+(204, 'Bengaluru', 'Recruitment'),
+(205, 'Mysuru', 'Networking');
+
+INSERT INTO assigned_to VALUES
+(1, 201, 'Analyst'),
+(2, 202, 'Manager'),
+(3, 203, 'Clerk'),
+(4, 204, 'Analyst'),
+(5, 205, 'Lead');
+
+INSERT INTO incentives VALUES
+(1, '2023-03-15', 2000),
+(2, '2023-04-20', 2500),
+(3, '2023-06-10', 2200);
+
+select e.empno,
+e.ename,
+e.dname,
+d.dloc
+from Employee e
+join dept d ON e.deptno = d.deptno;
+
+
+select e.empno,
+e.ename
+from employee e
+left join assigned_to ON e.empno=a.empno
+where a.empno is NULL;
+
+
+select p.projectno,
+p.pname,
+count(a.ename) as headcount
+from project p 
+left join employee_to a ON p.projectno=a.projectno
+group by p.projectno,p.pname;
+
+select d.deptno,
+d.dname,
+avg(e.sal) as avg_salary,
+Max(e.sal) as max_salary
+from dept d
+join employee e on d.deptno=e.deptno
+group by d.deptno,d.dname;
+
+
+select e.empno,e.ename,e.pname 
+from employee e
+join assigned_to a ON e.emono
+join project p on a.projectno = p.projectno
+where p.name = "Alpha Project";
+
+
+
+select d.deptno,
+d.dname
+from deptd
+left join employee e on d.deptno=e.deptno
+where e.empno is NULL;
+
+
+select m.empno as mgr_empno,
+m.ename as manager_name,
+count (e.empno) as direct_report
+from employee e
+join employee m on e.mgrno = m.empno
+group by m.empno,m.ename;
+
+
+
+select e.empno,
+e.ename,
+count (a.projectno) as project_count 
+from employee e 
+join assigned_to a on e.empno = a.empno
+group by e.empno,e.ename
+having count (a.projectno)>1;
+
+
+
+
+
