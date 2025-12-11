@@ -1,0 +1,31 @@
+use myDB;
+db;
+
+db.createCollection(“Student”);
+
+db.Student.drop();
+
+db.Student.insert(
+
+{_id:1,
+
+StudName:"MichelleJacintha",
+
+Grade:"VII",
+
+Hobbies:"InternetSurfing"});
+
+
+var mystudent =
+
+[ {_id:4, StudName:"saurav", Grade:"V", Hobbies:"Dance"},
+{_id:5, StudName:"kumar", Grade:"VI", Hobbies:"Singing"}]
+
+db.Student.insert(mystudent)
+
+
+db.Student.update({_id:3, StudName:"Aryan David", Grade:
+"VII"},{$set:{Hobbies: "Skating"}},{upsert:true});
+
+
+db.Student.remove({"StudName":"saurav"})
