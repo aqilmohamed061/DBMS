@@ -1,99 +1,95 @@
-create database sup;
-use sup;
-CREATE TABLE Supplier (
+CREATE DATABASE supplier;
+USE supplier;
+
+CREATE TABLE supplier(
     sid INT PRIMARY KEY,
     sname VARCHAR(100),
-    city VARCHAR(100)
+    city VARCHAR(50)
 );
 
-CREATE TABLE Parts (
+CREATE TABLE parts (
     pid INT PRIMARY KEY,
-    pname VARCHAR(100),
-    color VARCHAR(100)
+    pname VARCHAR(50),
+    color VARCHAR(20)
 );
 
-CREATE TABLE Catalog (
+CREATE TABLE catalog(
     sid INT,
     pid INT,
     cost DECIMAL(10,2),
     PRIMARY KEY (sid, pid),
-    FOREIGN KEY (sid) REFERENCES Supplier(sid),
-    FOREIGN KEY (pid) REFERENCES Parts(pid)
+    FOREIGN KEY (sid) REFERENCES supplier(sid),
+    FOREIGN KEY (pid) REFERENCES parts(pid)
 );
 
-INSERT INTO Supplier VALUES (1, 'Acme Widget Suppliers', 'Delhi');
-INSERT INTO Supplier VALUES (2, 'BestParts Ltd', 'Mumbai');
-insert into supplier values (3, 'Vimal' , 'Mumbai');
-insert into supplier value (4, 'Reliance', ' Delhi');
-select * from supplier;
+INSERT INTO supplier (sid, sname, city) VALUES
+(1, 'Acme Widget Supplier', 'Bengaluru'),
+(2, 'Global Industries', 'Chennai'),
+(3, 'National Parts Co', 'Delhi'),
+(4, 'Reliable Supplies', 'Mumbai');
 
-INSERT INTO Parts VALUES (01, 'Bolt', 'red');
-INSERT INTO Parts VALUES (02, 'Nut', 'blue');
-insert into parts values (03,'Screw Anchor', 'White');
-INSERT INTO Parts VALUES (04, 'Screw', 'red');
-insert into parts values (05, 'Ball Bearings' , 'brown');
-select * from parts;
+INSERT INTO parts (pid, pname, color) VALUES
+(101, 'Bolt', 'Red'),
+(102, 'Nut', 'Green'),
+(103, 'Screw', 'Red'),
+(104, 'Washer', 'Blue'),
+(105, 'Cog', 'Red');
 
-INSERT INTO Catalog VALUES (1, 01, 50.00);
-INSERT INTO Catalog VALUES (1, 02, 60.00);
-INSERT INTO Catalog VALUES (2, 03, 40.00);
-INSERT INTO Catalog VALUES (2, 04, 80.00);
-select * from catalog;
-
+INSERT INTO catalog (sid, pid, cost) VALUES
+(1, 103, 10.00),
+(1, 101, 12.50),
+(2, 101, 11.00),
+(2, 104, 9.50),
+(3, 102, 7.75),
+(3, 105, 15.00),
+(4, 103, 8.00),
+(4, 104, 9.75);
 
 SELECT DISTINCT p.pname
-FROM Parts p
-JOIN Catalog c ON p.pid = c.pid;
+FROM parts p
+JOIN catalog c ON p.pid = c.pid;
 
 SELECT s.sname
-FROM Supplier s
-WHERE NOT EXISTS (
-    SELECT p.pid FROM Parts p
-    WHERE p.color = 'red' AND NOT EXISTS (
-        SELECT * FROM Catalog c
-        WHERE c.sid = s.sid AND c.pid = p.pid
-    )
-);
-
+FROM supplier s
+JOIN catalog c ON s.sid = c.sid
+GROUP BY s.sname, s.sid
+HAVING COUNT(DISTINCT c.pid) = (SELECT COUNT(*) FROM parts);
 
 SELECT s.sname
-FROM Supplier s
-WHERE NOT EXISTS (
-    SELECT p.pid FROM Parts p
-    WHERE p.color = 'red' AND NOT EXISTS (
-        SELECT * FROM Catalog c
-        WHERE c.sid = s.sid AND c.pid = p.pid
-    )
-);
-
+FROM supplier s
+JOIN catalog c ON s.sid = c.sid
+JOIN parts p ON c.pid = p.pid
+WHERE p.color = 'Red'
+GROUP BY s.sname, s.sid
+HAVING COUNT(DISTINCT p.pid) = (SELECT COUNT(*) FROM parts WHERE color = 'Red');
 
 SELECT p.pname
-FROM Parts p
-JOIN Catalog c ON p.pid = c.pid
-JOIN Supplier s ON c.sid = s.sid
-WHERE s.sname = 'Acme Widget Suppliers'
-AND NOT EXISTS (
-    SELECT * FROM Catalog c2
-    WHERE c2.pid = p.pid
-    AND c2.sid <> s.sid
+FROM parts p
+JOIN catalog c ON p.pid = c.pid
+JOIN supplier s ON c.sid = s.sid
+WHERE s.sname = 'Acme Widget Supplier'
+AND p.pid IN (
+    SELECT pid
+    FROM catalog
+    GROUP BY pid
+    HAVING COUNT(sid) = 1
 );
 
-
 SELECT DISTINCT c.sid
-FROM Catalog c
+FROM catalog c
 WHERE c.cost > (
     SELECT AVG(c2.cost)
-    FROM Catalog c2
+    FROM catalog c2
     WHERE c2.pid = c.pid
 );
 
-
-SELECT p.pname, s.sname
-FROM Parts p
-JOIN Catalog c ON p.pid = c.pid
-JOIN Supplier s ON c.sid = s.sid
-WHERE (p.pid, c.cost) IN (
-    SELECT pid, MAX(cost)
-    FROM Catalog
-    GROUP BY pid
+SELECT p.pname, s.sname, c.cost
+FROM supplier s
+JOIN catalog c ON s.sid = c.sid
+JOIN parts p ON c.pid = p.pid
+WHERE c.cost = (
+    SELECT MAX(c2.cost)
+    FROM catalog c2
+    WHERE c2.pid = p.pid
 );
+
