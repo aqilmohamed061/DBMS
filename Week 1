@@ -35,7 +35,7 @@ primary key(driver_id,reg_num,report_num),
 foreign key(driver_id) references person(driver_id),
 foreign key(reg_num) references car(reg_num),
 foreign key(report_num) references accident(report_num));
-
+\\ Update or Extra Query \\
 insert into person values('A01','Richard','Srinivas nagar');
 insert into person values('A02','Pradeep','Rajaji nagar');
 insert into person values('A03','Smith','Ashok nagar');
